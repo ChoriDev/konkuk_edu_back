@@ -7,4 +7,9 @@ class Item(models.Model):
     student_name = models.CharField(max_length=20, null=True)
     rental_date = models.DateTimeField(null=True)
     deadline_date = models.DateTimeField(null=True)
-    state = models.BooleanField(default=True)
+    state = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['no', 'name'], name='물품별 고유 번호 부여'),
+        ]
