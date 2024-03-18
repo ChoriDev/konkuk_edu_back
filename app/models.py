@@ -1,7 +1,7 @@
 from djongo import models
 
 class Item(models.Model):
-    no = models.CharField(max_length=2)
+    no = models.IntegerField()
     name = models.CharField(max_length=20)
     student_id = models.CharField(max_length=9, default=None, null=True)
     student_name = models.CharField(max_length=20, default=None, null=True)

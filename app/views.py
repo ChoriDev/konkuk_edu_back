@@ -33,7 +33,7 @@ class ItemList(APIView):
                     return Response(status=status.HTTP_409_CONFLICT)
             # 중복되는 물품이 없을 경우 DB에 저장
             for no in range(int(data.get('start_no')), int(data.get('end_no')) + 1):
-                data['no'] = str(no)
+                data['no'] = no
                 serializer = ItemSerializer(data=data)
                 if serializer.is_valid(): # 유효성 검사
                     serializer.save()
