@@ -21,18 +21,19 @@ class ItemList(APIView):
     def post(self, request):
 
         # 클라이언트가 보낸 데이터
-        data = request.data
+        # QueryDict(request.data)은 immutable여서 딕셔너리로 copy
+        data = request.data.copy()
 
         # 한 번에 물품 여러 개를 추가하는 경우
-        if data.get('start_no') != None and data.get('end_no') != None:
+        if data.get('start_no') != "" and data.get('end_no') != "":
             # 이미 존재하는 물품인지 유효성 검사
-            for no in range(data.get('start_no'), data.get('end_no') + 1):
+            for no in range(int(data.get('start_no')), int(data.get('end_no')) + 1):
                 item = Item.objects.filter(no=no, name=data.get('name'))
                 if len(list(item)) != 0:
                     return Response(status=status.HTTP_409_CONFLICT)
-            # 중복되는 물품이 없을 경우 DB에 저장          
-            for no in range(data.get('start_no'), data.get('end_no') + 1):
-                data['no'] = no
+            # 중복되는 물품이 없을 경우 DB에 저장
+            for no in range(int(data.get('start_no')), int(data.get('end_no')) + 1):
+                data['no'] = str(no)
                 serializer = ItemSerializer(data=data)
                 if serializer.is_valid(): # 유효성 검사
                     serializer.save()
@@ -57,17 +58,18 @@ class ItemDetail(APIView):
             raise Http404
     
     # Item의 상세 내용 조회
-    def get(self, request, pk, format='json'):
+    def get(self, request, pk, format=None):
         item = self.get_object(pk)
         serializer = ItemSerializer(item)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     # Item 수정
-    def patch(self, request, pk, format='json'):
+    def patch(self, request, pk, format=None):
         item = self.get_object(pk)
 
         # 클라이언트가 보낸 데이터
-        data = request.data
+        # QueryDict(request.data)은 immutable여서 딕셔너리로 copy
+        data = request.data.copy()
 
         # 물품을 대여하는 경우
         if data.get('state') == True:
@@ -85,17 +87,20 @@ class ItemDetail(APIView):
         else:
             data['student_id'] = None
             data['student_name'] = None
+            data['phone_num'] = None
             data['rental_date'] = None
             data['deadline_date'] = None
 
         serializer = ItemSerializer(item, data=data)
+
+        print(data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # Item 삭제
-    def delete(self, request, pk, format='json'):
+    def delete(self, request, pk, format=None):
         item = self.get_object(pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
